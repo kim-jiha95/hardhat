@@ -28,8 +28,8 @@ contract WavePortal {
      */
     Wave[] waves;
 
-    constructor() {
-        console.log("I AM SMART CONTRACT. POG.");
+    constructor() payable {
+        console.log("We have been constructed!");
     }
 
     /*
@@ -37,21 +37,6 @@ contract WavePortal {
      * now it requires a string called _message. This is the message our user
      * sends us from the frontend!
      */
-    function wave(string memory _message) public {
-        totalWaves += 1;
-        console.log("%s waved w/ message %s", msg.sender, _message);
-
-        /*
-         * This is where I actually store the wave data in the array.
-         */
-        waves.push(Wave(msg.sender, _message, block.timestamp));
-
-        /*
-         * I added some fanciness here, Google it and try to figure out what it is!
-         * Let me know what you learn in #general-chill-chat
-         */
-        emit NewWave(msg.sender, block.timestamp, _message);
-    }
 
     /*
      * I added a function getAllWaves which will return the struct array, waves, to us.
@@ -66,5 +51,22 @@ contract WavePortal {
         // We'll also print it over in run.js as well.
         console.log("We have %d total waves!", totalWaves);
         return totalWaves;
+    }
+
+    function wave(string memory _message) public {
+        totalWaves += 1;
+        console.log("%s has waved!", msg.sender);
+
+        waves.push(Wave(msg.sender, _message, block.timestamp));
+
+        emit NewWave(msg.sender, block.timestamp, _message);
+
+        uint256 prizeAmount = 0.0001 ether;
+        require(
+            prizeAmount <= address(this).balance,
+            "Trying to withdraw more money than the contract has."
+        );
+        (bool success, ) = (msg.sender).call{value: prizeAmount}("");
+        require(success, "Failed to withdraw money from contract.");
     }
 }
